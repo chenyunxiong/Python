@@ -1,0 +1,12 @@
+# 登录知乎 
+# 按F12去network里面查找cookie跟user-agent模拟登录即可
+from urllib import response
+import requests
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+    'Cookie': '_zap=66ccbb79-387a-42b5-8624-a8578b0585a5; _xsrf=9244a776-84b2-4f77-8672-ddfdc2618aff; d_c0=AJAWhqSafxWPTqRLuEBPHoFzqgQh8AepD7c=|1662120617; __snaker__id=LTcwMcjmZM39mX18; _9755xjdesxxd_=32; q_c1=601da888fd504ab8b3adbec8f983ca8f|1662173091000|1662173091000; tst=r; NOT_UNREGISTER_WAITING=1; captcha_session_v2=2|1:0|10:1662211340|18:captcha_session_v2|88:WlpZNGtid3NLK2p2dmFseWxDSXJYTmtaOTZqZ1o0Rm1mS2haNVlVN3ZZaDRvSkY4VkVPYUJzNTFTTkpMOVVXRQ==|9a97967d7414a7a6c4f5d1a5a8e50eed585462bbc1c826a0f7d1397888516086; SESSIONID=gKYrfbMWRFUbg3k1pRdcjCZiw5mdg3HgjrmhQpwjKRk; gdxidpyhxdE=SxRZ2QrmKlU5MY3hCAnBgf7Ul2AHiJPhqtspIn9VfwujgjoTqMKZp2xTtN54q38OZaxyLafgBbnyNah%2Fb6UlIrb765oA5hCr6379afc85alXA%2B41kzqUxKmrGpugwBcVA9NsNZKh7NJuiUQjndhrOwV474brp5eZ6Pxc7k0apOfXHCdP%3A1662212242059; YD00517437729195%3AWM_NI=Bbqpbb9w%2FsEwG4TqmRY8%2B%2B%2Bd%2FiTwrGz9hTFFYepvhWSLShai6i8BsCWaFlJyKbFyS%2F9V67rclboQn5VhSeRsyVRgABqqFW8xKNdkeis6J8NPPrZSD1fLh6Shov3Y8pMkTWE%3D; YD00517437729195%3AWM_NIKE=9ca17ae2e6ffcda170e2e6eea9e45298f098d8d74382e78fa7c54f868f8fb0c54db59f8498c64b8dabbca6ec2af0fea7c3b92a82bebf91e16afba9e194c87d85ec9c92f05a9be8e5ccaa70edb79c98f14dbae7a8b5c54e9bbbc097eb5d91949d89e463f6b7f8a3f24995bf8a8dc97389be8a9ad225fb8afad8f169b0bea1b2ed3f96b89d86d179bb8a9e88c44ab3af8ab8bb748992ac8ce863b1ea86d9cd5c94ae96b4c73ba694a8d7d264adaafdbabb7c8fb59cb8c837e2a3; YD00517437729195%3AWM_TID=n%2FL4y3841QBBFFQBRBaEBTO7dZ9o7XvJ; z_c0=2|1:0|10:1662211362|4:z_c0|92:Mi4xdVNJMkJ3QUFBQUFBa0JhR3BKcF9GU1lBQUFCZ0FsVk5JcU1BWkFBNG9jQlRJM0dpdlJ6R3pabEk3ZG9HYUE4Sm5B|00854e1b626c5c09af119dd0f02a58ebd25624b8b86d1e5f05a6c57968ad59a4; KLBRSID=76ae5fb4fba0f519d97e594f1cef9fab|1662211361|1662208466'
+}
+session = requests.Session()
+response = session.get('https://www.zhihu.com/', headers=headers)
+print(response.text)
