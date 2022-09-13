@@ -20,6 +20,7 @@ show_mgr = 'showMgr'
 show_base = 'showBase'
 show_module = 'showModule'
 show_other = 'showOther'
+show_graph = 'showGraph'
 
 colorList = ['red', 'gold', 'violet', 'pink', 'limegreen', 'darkorange', 'gold', 'violet']
 
@@ -227,7 +228,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
         contaion = QWidget()
 
-        list = ['showView', 'showItem', 'showData', 'showCtrl', 'showMgr', 'showModule', 'showOther']
+        list = ['showView', 'showItem', 'showData', 'showCtrl', 'showMgr', 'showModule', 'showOther', 'showGraph']
         t1 = QAction(QIcon(""), list[0], self)
         t1.setCheckable(True)
         t1.triggered.connect(lambda: self.onToggleTrigger(t1.isChecked(), list[0]))
@@ -264,12 +265,10 @@ class MainWindow(QMainWindow):
         t7.triggered.connect(lambda: self.onToggleTrigger(t7.isChecked(), list[6]))
         t7.setStatusTip(list[6])
 
-        # t8 = QAction()
-
-        # t8 = QAction(QIcon(""), list[7], self)
-        # t8.setCheckable(True)
-        # t8.triggered.connect(lambda: self.onToggleTrigger(t8.isChecked(), list[7]))
-        # t8.setStatusTip(list[7])
+        t8 = QAction(QIcon(""), list[7], self)
+        t8.setCheckable(True)
+        t8.triggered.connect(lambda: self.onToggleTrigger(t8.isChecked(), list[7]))
+        t8.setStatusTip(list[7])
 
         tool_bar.addAction(t1)
         tool_bar.addAction(t2)
@@ -278,7 +277,7 @@ class MainWindow(QMainWindow):
         tool_bar.addAction(t5)
         tool_bar.addAction(t6)
         tool_bar.addAction(t7)
-        # tool_bar.addAction(t8)
+        tool_bar.addAction(t8)
 
         layout.addLayout(box)
 
@@ -307,9 +306,10 @@ class MainWindow(QMainWindow):
 
         # self.label.setText(txt)
         # pos = nx.multipartite_layout(self.G)
-        plt.figure(figsize=(10, 10))
-        nx.draw_networkx(self.G, None, True)
-        plt.show()
+        if self.showItem[show_graph]:
+            plt.figure(figsize=(10, 10))
+            nx.draw_networkx(self.G, None, True)
+            plt.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
