@@ -19,3 +19,14 @@ class GeekDocSubItem(scrapy.Item):
     title = scrapy.Field()
     link = scrapy.Field()
     desc = scrapy.Field()
+
+class BossscrapyItem(scrapy.Item):
+    url = scrapy.Field()
+    jobs = scrapy.Field()
+    work_address = scrapy.Field()
+    scalary = scrapy.Field()
+    experiences = scrapy.Field()
+    degree = scrapy.Field()
+    company = scrapy.Field()
+    financing_condition = scrapy.Field()
+    company_persion = scrapy.Field()

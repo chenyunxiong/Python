@@ -90,9 +90,6 @@ class Main():
     root_node = None
     parse_item = {}
     root_name_list = []
-    tree = QTreeWidget()
-    tree.setColumnCount(1)
-    tree.setHeaderLabel('tree')
 
     def check_show_item(self, subName, parentName = None):
         if subName.endswith("Base"):
@@ -174,11 +171,25 @@ class Main():
                 g.add_edge(n.name, node.name)
                 self.draw(g, n, node_size)
 
-    def drow_map(self, g):
+    def draw_tree(self, node, tree_node):
+        if node == None or len(node.children) <= 0:
+            return 
+        for n in node.children.values():
+            if n != None:
+                item = QTreeWidgetItem(tree_node)
+                item.setText(0, n.name)
+                self.draw_tree(n, item)
+
+    def drow_map(self, g, tree_root):
         node_size = 10
         self.draw(g, self.root_node, node_size)
         tmpDict = self.root_node.tostring(True)
         txt = json.dumps(tmpDict)
+        self.draw_tree(self.root_node, tree_root)
+            
+        # self.tree = QTreeWidget()
+        # self.root_widget = QTreeWidgetItem(self.tree)
+        # self.tree.show()
 
         
         return txt
@@ -206,6 +217,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('项目类继承图')
         tool_bar = QToolBar('bar')
         self.addToolBar(tool_bar)
+
+        self.tree = QTreeWidget()        
+        self.tree.setColumnCount(1)
+        self.tree.setHeaderLabel('tree')
+        self.tree.setHeaderHidden(True)
 
         box = QHBoxLayout()
         layout = QVBoxLayout()
@@ -248,6 +264,8 @@ class MainWindow(QMainWindow):
         t7.triggered.connect(lambda: self.onToggleTrigger(t7.isChecked(), list[6]))
         t7.setStatusTip(list[6])
 
+        # t8 = QAction()
+
         # t8 = QAction(QIcon(""), list[7], self)
         # t8.setCheckable(True)
         # t8.triggered.connect(lambda: self.onToggleTrigger(t8.isChecked(), list[7]))
@@ -268,8 +286,9 @@ class MainWindow(QMainWindow):
         btn.clicked.connect(self.onStartClick)
         layout.addWidget(btn)
 
-        self.label = QTextBrowser()
-        layout.addWidget(self.label)
+        layout.addWidget(self.tree)
+        # self.label = QTextBrowser()
+        # layout.addWidget(self.label)
 
         contaion.setLayout(layout)
         self.setCentralWidget(contaion)
@@ -279,12 +298,14 @@ class MainWindow(QMainWindow):
 
     def onStartClick(self):
         self.G.clear()
-        
         self.main.read_file(self.showItem)
         self.main.parse_node()
-        txt = self.main.drow_map(self.G)
+        self.tree.clear()
+        self.tree_root = QTreeWidgetItem(self.tree)
+        self.tree_root.setText(0, self.main.root_node.name)
+        txt = self.main.drow_map(self.G, self.tree_root)
 
-        self.label.setText(txt)
+        # self.label.setText(txt)
         # pos = nx.multipartite_layout(self.G)
         plt.figure(figsize=(10, 10))
         nx.draw_networkx(self.G, None, True)
