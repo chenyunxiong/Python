@@ -1,22 +1,27 @@
 import json
-import os
 import glob
-from posixpath import basename
 import re
+import sys
+from typing import Dict
 import networkx as nx
 import matplotlib.pyplot as plt
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QToolBar, QTextBrowser, QTreeView, QTreeWidget, QTreeWidgetItem
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtCore import QJsonArray, QJsonDocument, QJsonParseError, QJsonValue
+
 
 # path = "E:\Projects\Python\lua_analysis\\"
 path = 'C:\Project\gof\gof_client\Assets\Lua\\'
-show_view = False
-show_item = False
-show_data = False
-show_ctrl = False
-show_mgr = False
-show_base = True
-show_module = True
-show_other = True
+show_view = 'showView'
+show_item = 'showItem'
+show_data = 'showData'
+show_ctrl = 'showCtrl'
+show_mgr = 'showMgr'
+show_base = 'showBase'
+show_module = 'showModule'
+show_other = 'showOther'
 
+colorList = ['red', 'gold', 'violet', 'pink', 'limegreen', 'darkorange', 'gold', 'violet']
 
 class NodeData():
     name = ''
@@ -83,27 +88,31 @@ class Main():
     name_dict = {}
     mark_dict = {}
     root_node = None
-
+    parse_item = {}
     root_name_list = []
+    tree = QTreeWidget()
+    tree.setColumnCount(1)
+    tree.setHeaderLabel('tree')
 
     def check_show_item(self, subName, parentName = None):
         if subName.endswith("Base"):
-            return show_base
+            return self.parse_item.__contains__(show_base) and self.parse_item[show_base]
         if subName.endswith("Module"):
-            return show_base
+            return self.parse_item.__contains__(show_module) and self.parse_item[show_module]
         if (subName.endswith("View") or subName.endswith("Panel")):
-            return show_view
+            return self.parse_item.__contains__(show_view) and self.parse_item[show_view]
         if subName.endswith("Item"):
-            return show_item
+            return self.parse_item.__contains__(show_item) and self.parse_item[show_item]
         if subName.endswith("Ctrl"):
-            return show_ctrl
+            return self.parse_item.__contains__(show_ctrl) and self.parse_item[show_ctrl]
         if subName.endswith("Data"):
-            return show_data
+            return self.parse_item.__contains__(show_data) and self.parse_item[show_data]
         if subName.endswith("Mgr"):
-            return show_mgr
-        return show_other
+            return self.parse_item.__contains__(show_mgr) and self.parse_item[show_mgr]
+        return self.parse_item.__contains__(show_other) and self.parse_item[show_other]
     
-    def read_file(self):
+    def read_file(self, parse_item):
+        self.parse_item = parse_item
         list = glob.glob(path+'**/*.lua', recursive=True)
         for l in list:
             with open(l, 'r', encoding='utf-8') as f:
@@ -155,20 +164,135 @@ class Main():
                 nodeList.append(child_node)
                 targetNode.add_child(child_node)
 
-    def drow_map(self, g):
-        txt = json.dumps(self.root_node.tostring(True))
-        print(txt)
-        pass
-        # G = nx.DiGraph(self.root_node.tostring(True))
+    def draw(self, g, node, node_size):
+        if node == None or len(node.children) <= 0:
+            return
+        node_size -= 2
+        for n in node.children.values():
+            if n != None:
+                g.add_node(n.name, size = node_size, font_size = node_size, node_color = colorList)
+                g.add_edge(n.name, node.name)
+                self.draw(g, n, node_size)
 
-        # nx.draw_networkx(G)
-        # plt.show()
+    def drow_map(self, g):
+        node_size = 10
+        self.draw(g, self.root_node, node_size)
+        tmpDict = self.root_node.tostring(True)
+        txt = json.dumps(tmpDict)
+
+        
+        return txt
+        # # print(txt)
+        # # while 
+        # for key in tmpDict.keys():
+        #     if isinstance(tmpDict[key], dict):
+        #         print(key)
+        # # self.root_node.draw(g, self.root_node)
+        # return txt, self.root_node.tostring(True)
+        # # G = nx.DiGraph(self.root_node.tostring(True))
+        # # nx.draw_networkx(g)
+        # # plt.show()
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.main = Main()
+        self.G = nx.DiGraph()
+        self.G.add_node('class')
+
+        self.showItem = {'showBase': True}
+
+        self.setWindowTitle('项目类继承图')
+        tool_bar = QToolBar('bar')
+        self.addToolBar(tool_bar)
+
+        box = QHBoxLayout()
+        layout = QVBoxLayout()
+        contaion = QWidget()
+
+        list = ['showView', 'showItem', 'showData', 'showCtrl', 'showMgr', 'showModule', 'showOther']
+        t1 = QAction(QIcon(""), list[0], self)
+        t1.setCheckable(True)
+        t1.triggered.connect(lambda: self.onToggleTrigger(t1.isChecked(), list[0]))
+        t1.setStatusTip(list[0])
+
+        t2 = QAction(QIcon(""), list[1], self)
+        t2.setCheckable(True)
+        t2.triggered.connect(lambda: self.onToggleTrigger(t2.isChecked(), list[1]))
+        t2.setStatusTip(list[1])
+
+        t3 = QAction(QIcon(""), list[2], self)
+        t3.setCheckable(True)
+        t3.triggered.connect(lambda: self.onToggleTrigger(t3.isChecked(), list[2]))
+        t3.setStatusTip(list[2])
+
+        t4 = QAction(QIcon(""), list[3], self)
+        t4.setCheckable(True)
+        t4.triggered.connect(lambda: self.onToggleTrigger(t4.isChecked(), list[3]))
+        t4.setStatusTip(list[3])
+        tool_bar.addAction(t1)
+
+        t5 = QAction(QIcon(""), list[4], self)
+        t5.setCheckable(True)
+        t5.triggered.connect(lambda: self.onToggleTrigger(t5.isChecked(), list[4]))
+        t5.setStatusTip(list[4])
+
+        t6 = QAction(QIcon(""), list[5], self)
+        t6.setCheckable(True)
+        t6.triggered.connect(lambda: self.onToggleTrigger(t6.isChecked(), list[5]))
+        t6.setStatusTip(list[5])
+
+        t7 = QAction(QIcon(""), list[6], self)
+        t7.setCheckable(True)
+        t7.triggered.connect(lambda: self.onToggleTrigger(t7.isChecked(), list[6]))
+        t7.setStatusTip(list[6])
+
+        # t8 = QAction(QIcon(""), list[7], self)
+        # t8.setCheckable(True)
+        # t8.triggered.connect(lambda: self.onToggleTrigger(t8.isChecked(), list[7]))
+        # t8.setStatusTip(list[7])
+
+        tool_bar.addAction(t1)
+        tool_bar.addAction(t2)
+        tool_bar.addAction(t3)
+        tool_bar.addAction(t4)
+        tool_bar.addAction(t5)
+        tool_bar.addAction(t6)
+        tool_bar.addAction(t7)
+        # tool_bar.addAction(t8)
+
+        layout.addLayout(box)
+
+        btn = QPushButton("开始解析")
+        btn.clicked.connect(self.onStartClick)
+        layout.addWidget(btn)
+
+        self.label = QTextBrowser()
+        layout.addWidget(self.label)
+
+        contaion.setLayout(layout)
+        self.setCentralWidget(contaion)
+    
+    def onToggleTrigger(self, checked, name):
+        self.showItem[name] = checked
+
+    def onStartClick(self):
+        self.G.clear()
+        
+        self.main.read_file(self.showItem)
+        self.main.parse_node()
+        txt = self.main.drow_map(self.G)
+
+        self.label.setText(txt)
+        # pos = nx.multipartite_layout(self.G)
+        plt.figure(figsize=(10, 10))
+        nx.draw_networkx(self.G, None, True)
+        plt.show()
 
 if __name__ == "__main__":
-    main = Main()
-    G = nx.DiGraph()
-    main.read_file()
-    main.parse_node()
-    main.drow_map(G)
-    nx.draw_networkx(G)
-    plt.show()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    app.exec()
+

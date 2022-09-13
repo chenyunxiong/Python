@@ -24,26 +24,26 @@ class MainWindow(QMainWindow):
         # button_action2.setCheckable(True)
         toolbar.addAction(button_action2)
 
-        button_action3 = QAction(QIcon('bug.png'), "button", self)
-        button_action3.setStatusTip("btn")
-        button_action3.triggered.connect(self.onMyToolBarButtonClick)
+        # button_action3 = QAction(QIcon('bug.png'), "button", self)
+        # button_action3.setStatusTip("btn")
+        # button_action3.triggered.connect(self.onMyToolBarButtonClick)
 
-        toolbar.addSeparator()
-        toolbar.addWidget(QLabel("label"))
-        toolbar.addSeparator()
-        toolbar.addWidget(QCheckBox())
+        # toolbar.addSeparator()
+        # toolbar.addWidget(QLabel("label"))
+        # toolbar.addSeparator()
+        # toolbar.addWidget(QCheckBox())
 
-        self.setStatusBar(QStatusBar(self))
-        self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        # self.setStatusBar(QStatusBar(self))
+        # self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
 
-        menubar = self.menuBar()
-        menu = menubar.addMenu('%menu1')
-        menu.addAction(button_action2)
-        menu.addSeparator()
-        # menu.addAction(button_action3)
+        # menubar = self.menuBar()
+        # menu = menubar.addMenu('%menu1')
+        # menu.addAction(button_action2)
         # menu.addSeparator()
-        subMenu = menu.addMenu("subItem")
-        subMenu.addAction(button_action2)
+        # # menu.addAction(button_action3)
+        # # menu.addSeparator()
+        # subMenu = menu.addMenu("subItem")
+        # subMenu.addAction(button_action2)
 
 
 
