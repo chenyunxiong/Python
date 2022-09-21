@@ -2,16 +2,28 @@ import json
 import glob
 import re
 import sys
-from typing import Dict
 import networkx as nx
 import matplotlib.pyplot as plt
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QHBoxLayout, QVBoxLayout, QWidget, QToolBar, QTextBrowser, QTreeView, QTreeWidget, QTreeWidgetItem
+from PySide6.QtWidgets import (
+    QApplication, 
+    QMainWindow, 
+    QPushButton, 
+    QHBoxLayout, 
+    QVBoxLayout, 
+    QWidget, 
+    QToolBar, 
+    QTextBrowser, 
+    QTreeView, 
+    QTreeWidget, 
+    QTreeWidgetItem,
+    QLabel,
+    QTextEdit,
+    QLineEdit,
+)
 from PySide6.QtGui import QAction, QIcon
-from PySide6.QtCore import QJsonArray, QJsonDocument, QJsonParseError, QJsonValue
-
 
 # path = "E:\Projects\Python\lua_analysis\\"
-path = 'C:\Project\gof\gof_client\Assets\Lua\\'
+oriPath = 'C:\Project\gof\gof_client\Assets\Lua\\'
 show_view = 'showView'
 show_item = 'showItem'
 show_data = 'showData'
@@ -93,24 +105,41 @@ class Main():
     root_name_list = []
 
     def check_show_item(self, subName, parentName = None):
-        if subName.endswith("Base"):
+        if (parentName == 'class' or parentName == 'ObjectBase' or parentName == 'ViewBase') and (subName.endswith("Base") or subName.endswith("Object")):# and (subName.endswith("Base") or subName.endswith("Object") or subName.endswith('ViewBase')):
             return self.parse_item.__contains__(show_base) and self.parse_item[show_base]
-        if subName.endswith("Module"):
+        if parentName == 'ModuleBase' and subName.endswith("Module"):
             return self.parse_item.__contains__(show_module) and self.parse_item[show_module]
-        if (subName.endswith("View") or subName.endswith("Panel")):
+        if parentName == 'MainViewBase' or parentName == 'PopupViewBase':
             return self.parse_item.__contains__(show_view) and self.parse_item[show_view]
-        if subName.endswith("Item"):
+        if parentName == 'ItemBase':
             return self.parse_item.__contains__(show_item) and self.parse_item[show_item]
-        if subName.endswith("Ctrl"):
+        if parentName == 'LogicCtrlBase':
             return self.parse_item.__contains__(show_ctrl) and self.parse_item[show_ctrl]
-        if subName.endswith("Data"):
+        if subName.endswith('Data') or subName.endswith('Info'):
             return self.parse_item.__contains__(show_data) and self.parse_item[show_data]
-        if subName.endswith("Mgr"):
+        if subName.endswith("Mgr") or subName.endswith("Manager"):
             return self.parse_item.__contains__(show_mgr) and self.parse_item[show_mgr]
         return self.parse_item.__contains__(show_other) and self.parse_item[show_other]
+
+        # if subName.endswith("Base") or subName.endswith("Object"):
+        #     return self.parse_item.__contains__(show_base) and self.parse_item[show_base]
+        # if subName.endswith("Module"):
+        #     return self.parse_item.__contains__(show_module) and self.parse_item[show_module]
+        # if (subName.endswith("View") or subName.endswith("Panel") or subName.endswith("Pop") or subName.endswith("PopUp") or subName.endswith("Popup")):
+        #     return self.parse_item.__contains__(show_view) and self.parse_item[show_view]
+        # if subName.endswith("Item"):
+        #     return self.parse_item.__contains__(show_item) and self.parse_item[show_item]
+        # if subName.endswith("Ctrl"):
+        #     return self.parse_item.__contains__(show_ctrl) and self.parse_item[show_ctrl]
+        # if subName.endswith("Data"):
+        #     return self.parse_item.__contains__(show_data) and self.parse_item[show_data]
+        # if subName.endswith("Mgr"):
+        #     return self.parse_item.__contains__(show_mgr) and self.parse_item[show_mgr]
+        # return self.parse_item.__contains__(show_other) and self.parse_item[show_other]
     
-    def read_file(self, parse_item):
+    def read_file(self, parse_item, path):
         self.parse_item = parse_item
+        print("path: ", path)
         list = glob.glob(path+'**/*.lua', recursive=True)
         for l in list:
             with open(l, 'r', encoding='utf-8') as f:
@@ -123,13 +152,16 @@ class Main():
                     if r_base_class:
                         parentName = r_base_class.group(1)
                         if parentName not in self.name_dict.keys():
-                            if self.check_show_item(parentName):
+                            if self.check_show_item(parentName, 'class'):
                                 self.name_dict[parentName] = NodeData(parentName, 'class')
+                        # if parentName not in self.name_dict.keys():
+                        #     if self.check_show_item(parentName):
+                        #         self.name_dict[parentName] = NodeData(parentName, 'class') 
 
                     if r_base2 != None:
                         parentName = r_base2.group(2)
                         subName = r_base2.group(1)
-                        if self.check_show_item(subName):
+                        if self.check_show_item(subName, parentName):
                             if subName not in self.name_dict.keys():
                                 self.name_dict[subName] = NodeData(subName, parentName)
                         else:
@@ -138,7 +170,7 @@ class Main():
                     if r_base3 != None:
                         parentName = r_base3.group(2)
                         subName = r_base3.group(1)
-                        if self.check_show_item(subName):
+                        if self.check_show_item(subName, parentName):
                             if subName not in self.name_dict.keys():
                                 self.name_dict[subName] = NodeData(subName, parentName)
                         else:
@@ -281,6 +313,10 @@ class MainWindow(QMainWindow):
 
         layout.addLayout(box)
 
+        self.pathLabel = QLineEdit()
+        self.pathLabel.setText(oriPath)
+        # self.pathLabel.setMaximumHeight(30)
+        layout.addWidget(self.pathLabel)
         btn = QPushButton("开始解析")
         btn.clicked.connect(self.onStartClick)
         layout.addWidget(btn)
@@ -297,7 +333,7 @@ class MainWindow(QMainWindow):
 
     def onStartClick(self):
         self.G.clear()
-        self.main.read_file(self.showItem)
+        self.main.read_file(self.showItem, self.pathLabel.text())
         self.main.parse_node()
         self.tree.clear()
         self.tree_root = QTreeWidgetItem(self.tree)
@@ -306,7 +342,7 @@ class MainWindow(QMainWindow):
 
         # self.label.setText(txt)
         # pos = nx.multipartite_layout(self.G)
-        if self.showItem[show_graph]:
+        if self.showItem.__contains__(show_graph) and self.showItem[show_graph] == True:
             plt.figure(figsize=(10, 10))
             nx.draw_networkx(self.G, None, True)
             plt.show()
